@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/* Brand tokens (see DESIGN.md). Palette vars are overridden per store from Website Editor presets. */
+:root {
+  /* Sampled from the Jordi Pastry menu boards: ribbon rose, blush drips, rose-gold wings, cream paper */
+  --pink: #c46b65;
+  --pink-ink: #a8524e;
+  --pink-soft: #f6d3cc;
+  --pink-tint: #fbe9e4;
+  --accent: #b8754f;
+  --accent-ink: #94573a;
+  --cream: #fdf5f0;
+  --cocoa: #2b2220;
+  --cocoa-muted: #6e5652;
+  --line: #f0dcd5;
+  --good: #1f7a4d;
+  --good-tint: #e6f5ec;
+  --warn: #8a5300;
+  --warn-tint: #fff2dc;
+  --bad: #b3261e;
+  --bad-tint: #fdeceb;
+  --info: #2952a3;
+  --info-tint: #e9effc;
+}
+
+@theme inline {
+  --color-pink: var(--pink);
+  --color-pink-ink: var(--pink-ink);
+  --color-pink-soft: var(--pink-soft);
+  --color-pink-tint: var(--pink-tint);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-cream: var(--cream);
+  --color-cocoa: var(--cocoa);
+  --color-cocoa-muted: var(--cocoa-muted);
+  --color-line: var(--line);
+  --color-good: var(--good);
+  --color-good-tint: var(--good-tint);
+  --color-warn: var(--warn);
+  --color-warn-tint: var(--warn-tint);
+  --color-bad: var(--bad);
+  --color-bad-tint: var(--bad-tint);
+  --color-info: var(--info);
+  --color-info-tint: var(--info-tint);
+  --font-display: var(--font-unbounded), system-ui, sans-serif;
+  --font-script: var(--font-unbounded), system-ui, sans-serif;
+  --font-arabic: var(--font-plex-arabic), system-ui, sans-serif;
+  --font-sans: var(--font-plex-arabic), system-ui, sans-serif;
+  --shadow-cloud: 0 1px 2px rgb(43 34 32 / 0.06), 0 12px 32px -12px rgb(168 82 78 / 0.28);
+  --shadow-lift: 0 2px 4px rgb(43 34 32 / 0.06), 0 22px 44px -16px rgb(168 82 78 / 0.36);
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 9s ease-in-out infinite;
+  --animate-drift: drift 7s ease-in-out infinite;
+  --animate-twinkle: twinkle 2.8s ease-in-out infinite;
+  --animate-marquee: marquee 38s linear infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { transform: scale(0.2) rotate(0deg); opacity: 0; }
+  45% { transform: scale(1) rotate(45deg); opacity: 1; }
+  70% { transform: scale(0.6) rotate(90deg); opacity: 0.6; }
+}
+
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -10px, 0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(0, -14px, 0) rotate(3deg); }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--cream);
+  color: var(--cocoa);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--pink-ink);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+::selection {
+  background: var(--pink-soft);
+  color: var(--cocoa);
+}
+
+/* Unbounded is wide: tighten tracking a touch so headings stay compact */
+.font-display {
+  letter-spacing: -0.02em;
+}
+
+[lang="ar"] {
+  font-family: var(--font-arabic);
+}
+
+/* Hide number input spinners; quantity steppers are custom */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
