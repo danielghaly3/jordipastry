@@ -19,7 +19,7 @@ export default async function ContactPage() {
 
   return (
     <div className="mx-auto max-w-[920px] px-5 pt-10 md:px-8 md:pt-14">
-      <h1 className="font-display text-[clamp(2rem,4.8vw,3.4rem)] font-bold leading-[1.1] tracking-[-0.02em]">Say <span className="text-pink-ink">hello</span></h1>
+      <h1 className="font-display text-[clamp(2rem,4.8vw,3.4rem)] font-bold leading-[1.1] tracking-[-0.02em]">Say <span className="script-accent text-pink-ink">hello</span></h1>
       <p className="mt-3 text-lg text-cocoa-muted">Questions about an order, a big celebration or a custom box? We&apos;d love to hear from you.</p>
 
       {contact.whatsapp && (

@@ -1,4 +1,5 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { checkoutSchema, quoteSchema, type CheckoutInput, type Quote } from "@/lib/checkout-schema";
 import { getPublicSettings } from "@/lib/data";
@@ -46,7 +47,12 @@ export async function placeOrder(input: CheckoutInput): Promise<ActionResult<{ t
     return fail("Too many orders from this connection. Please wait a while or message us on WhatsApp.");
   }
 
-  const { data, error } = await createServiceClient().rpc("place_order", {
+  const db = createServiceClient();
+  // Free stock/capacity held by long-unpaid orders now, instead of waiting for the once-a-day cron.
+  const { data: released } = await db.rpc("cancel_stale_orders", { p_hours: store.auto_cancel_unpaid_hours });
+  if ((released as string[] | null)?.length) revalidatePath("/", "layout");
+
+  const { data, error } = await db.rpc("place_order", {
     p: {
       idempotency_key: d.idempotency_key,
       customer: { name: d.name, phone, whatsapp },
@@ -65,6 +71,9 @@ export async function placeOrder(input: CheckoutInput): Promise<ActionResult<{ t
     return fail(friendlyError(error, "We couldn't place your order. Please try again."));
   }
   const result = data as { order_id: string; token: string; duplicate: boolean };
-  if (!result.duplicate) after(() => notifyOrderEvent(result.order_id, "order_created"));
+  if (!result.duplicate) {
+    after(() => notifyOrderEvent(result.order_id, "order_created"));
+    revalidatePath("/", "layout"); // stock and "sold out" labels on the cached store pages
+  }
   return ok({ token: result.token });
 }

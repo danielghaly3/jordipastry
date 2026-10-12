@@ -61,6 +61,7 @@ export function AutoRail({ items, label, speed = 32, itemClassName = "w-[260px] 
       <ul
         ref={ref}
         aria-label={label}
+        tabIndex={0} // lets keyboard users scroll the rail even when its cards have no links
         className={`no-scrollbar flex gap-5 overflow-x-auto px-5 md:px-[max(2rem,calc((100vw_-_1240px)/2_+_2rem))] ${className}`}
       >
         {items.map((item, i) => <li key={i} className={`shrink-0 ${itemClassName}`}>{item}</li>)}

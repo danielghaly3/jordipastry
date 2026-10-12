@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUp, Clock, CreditCard, Heart, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, CreditCard, Heart, Mail, MapPin, Phone } from "lucide-react";
 import { Doodles } from "@/components/brand/ribbon";
 import { LogoMark } from "@/components/brand/logo";
 import { Drip } from "@/components/home/drip";
@@ -47,9 +47,9 @@ export function Footer({ settings }: { settings: Pick<PublicSettings, "branding"
       <div className="relative mx-auto max-w-[1240px] px-5 pt-20 md:px-8 md:pt-24">
         {/* Contact card: questions and big orders (different from the homepage's order button) */}
         {(contact.whatsapp || phone) && (
-          <div className="flex flex-col items-start gap-5 rounded-[32px] bg-white p-6 shadow-lift md:flex-row md:items-center md:justify-between md:p-8">
+          <div className="flex flex-col items-start gap-5 rounded-[32px] bg-white p-6 shadow-lift md:p-8 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="font-[family-name:var(--font-script)] text-2xl text-pink-ink">Planning a party?</p>
+              <p className="font-[family-name:var(--font-script)] text-3xl text-pink-ink">Planning a party?</p>
               <h2 className="mt-1 font-display text-[clamp(1.3rem,2.4vw,1.8rem)] font-bold leading-[1.1]">Questions or a big order? Talk to us.</h2>
             </div>
             <div className="grid w-full gap-3 sm:flex sm:w-auto">
@@ -70,7 +70,7 @@ export function Footer({ settings }: { settings: Pick<PublicSettings, "branding"
         <div className="mt-14 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[1.3fr_0.7fr_0.7fr_1.1fr]">
           <div className="col-span-2 space-y-4 lg:col-span-1">
             <LogoMark src={branding.logo_mark_url} className="h-24 w-32" />
-            <p className="font-[family-name:var(--font-script)] text-2xl italic text-pink-ink">{branding.tagline}</p>
+            <p className="font-[family-name:var(--font-script)] text-2xl text-pink-ink">{branding.tagline}</p>
             <p className="max-w-xs text-[15px] leading-relaxed text-cocoa-muted">Donuts, cinnamon rolls, cookies and cookie tarts, made in our home kitchen and ready to order online.</p>
             <ul className="flex items-center gap-3" aria-label="Social media">
               {socialLinks.map(({ label, href }) => (
@@ -132,7 +132,6 @@ export function Footer({ settings }: { settings: Pick<PublicSettings, "branding"
             )}
             <Link href="/privacy" className="hover:text-pink-ink">Privacy</Link>
             <Link href="/terms" className="hover:text-pink-ink">Terms</Link>
-            <a href="#main" className="inline-flex items-center gap-1 font-semibold text-pink-ink hover:underline">Back to top <ArrowUp className="h-4 w-4" /></a>
           </div>
         </div>
       </div>

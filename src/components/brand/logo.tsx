@@ -1,8 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
+import Image from "next/image";
+
 // An uploaded logo / mark from Website Editor → Branding replaces the defaults everywhere.
 
+/** Optimized by next/image: the 1024px source is served at the small size it is shown (it sits on every page). */
 export function LogoMark({ className = "h-10 w-10", src }: { className?: string; src?: string }) {
-  return <img src={src || "/images/brand/mark.webp"} alt="" aria-hidden="true" className={`object-contain ${className}`} />;
+  return (
+    <span className={`relative block shrink-0 ${className}`} aria-hidden="true">
+      <Image src={src || "/images/brand/mark.webp"} alt="" fill sizes="160px" className="object-contain" />
+    </span>
+  );
 }
 
 type Branding = { wordmark: string; descriptor: string; store_name: string; logo_url: string; logo_mark_url: string };
@@ -21,7 +28,7 @@ export function Logo({ branding, full = false, className = "" }: { branding: Bra
 
   const name = branding.wordmark || branding.store_name || "JORDI";
   return (
-    <span className={`inline-flex items-center ${full ? "flex-col" : "gap-2.5"} ${className}`} aria-label={branding.store_name}>
+    <span className={`inline-flex items-center ${full ? "flex-col" : "gap-2.5"} ${className}`} role="img" aria-label={branding.store_name}>
       <LogoMark
         src={branding.logo_mark_url}
         className={full ? "h-24 w-32 md:h-28 md:w-40" : "h-12 w-14 sm:h-14 sm:w-16"}

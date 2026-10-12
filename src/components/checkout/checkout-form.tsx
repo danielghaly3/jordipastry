@@ -89,13 +89,19 @@ export function CheckoutForm({ store, areas, slots }: { store: PublicSettings["s
     if (submitting) return;
     setError("");
     setSubmitting(true);
-    const res = await placeOrder({
-      ...f,
-      whatsapp: f.differentWhatsapp ? f.whatsapp : "",
-      delivery_area_id: areaId,
-      items: orderItems,
-      idempotency_key: idempotencyKey(),
-    });
+    let res: Awaited<ReturnType<typeof placeOrder>>;
+    try {
+      res = await placeOrder({
+        ...f,
+        whatsapp: f.differentWhatsapp ? f.whatsapp : "",
+        delivery_area_id: areaId,
+        items: orderItems,
+        idempotency_key: idempotencyKey(),
+      });
+    } catch {
+      // Network drop / timeout: the idempotency key makes a retry safe (no duplicate order).
+      res = { ok: false, error: "We couldn't reach the shop. Please check your connection and tap Place order again." };
+    }
     if (res.ok) {
       setSubmitted(true);
       try { sessionStorage.removeItem(KEY); } catch {}
@@ -233,7 +239,7 @@ export function CheckoutForm({ store, areas, slots }: { store: PublicSettings["s
       <aside className="lg:sticky lg:top-28" aria-labelledby="summary">
         <div className="rounded-[28px] bg-white p-5 shadow-lift md:p-7">
           <h2 id="summary" className="font-display text-2xl font-semibold">Order summary</h2>
-          <CartLines items={items} />
+          <CartLines items={items} lineTotals={quote?.lines.length === items.length ? quote.lines.map((l) => l.line_total) : undefined} />
           <dl className="space-y-2 border-t border-line pt-4 text-[15px]">
             <div className="flex justify-between"><dt className="text-cocoa-muted">Subtotal</dt><dd>{formatEGP(subtotal)}</dd></div>
             <div className="flex justify-between">

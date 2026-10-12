@@ -33,6 +33,7 @@ const STORAGE_KEY = "jordi-cart-v1";
 const EMPTY: CartLine[] = [];
 let lines: CartLine[] = EMPTY;
 let loaded = false;
+let listening = false; // the cross-tab "storage" listener is added once, not on every reload
 let open = false;
 const listeners = new Set<() => void>();
 
@@ -47,6 +48,8 @@ function load() {
   } catch {
     lines = EMPTY;
   }
+  if (listening) return;
+  listening = true;
   window.addEventListener("storage", (e) => {
     if (e.key !== STORAGE_KEY) return;
     loaded = false;

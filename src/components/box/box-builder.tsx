@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Minus, Plus, Shuffle, Trash2, X } from "lucide-react";
@@ -14,6 +15,11 @@ import { formatEGP } from "@/lib/format";
 import { isAvailable, type BoxSize, type Product } from "@/lib/types";
 
 const img = (p: Product) => (p.images[0] ? publicImageUrl("product-images", p.images[0].storage_path) : null);
+
+/** Reads ?size= in the browser so the Build-a-Box page itself can be served from cache. */
+export function BoxBuilderFromUrl(props: { boxes: BoxSize[]; products: Product[] }) {
+  return <BoxBuilder {...props} initialSize={useSearchParams().get("size") ?? undefined} />;
+}
 
 export function BoxBuilder({ boxes, products, initialSize }: { boxes: BoxSize[]; products: Product[]; initialSize?: string }) {
   const [sizeId, setSizeId] = useState(boxes.find((b) => b.id === initialSize)?.id ?? boxes[Math.min(1, boxes.length - 1)].id);
@@ -33,12 +39,19 @@ export function BoxBuilder({ boxes, products, initialSize }: { boxes: BoxSize[];
     setSizeId(id);
     setSlots((s) => s.filter((pid) => next.eligible.includes(pid)).slice(0, next.slots));
   };
-  const addOne = (id: string) => remaining > 0 && setSlots((s) => [...s, id]);
+  // Don't let a box hold more of an item than is in stock (otherwise checkout fails with "out of stock").
+  const atStock = (id: string) => { const st = byId(id).stock_quantity; return st != null && count(id) >= st; };
+  const addOne = (id: string) => remaining > 0 && !atStock(id) && setSlots((s) => [...s, id]);
   const removeOne = (id: string) => setSlots((s) => { const i = s.lastIndexOf(id); return i < 0 ? s : [...s.slice(0, i), ...s.slice(i + 1)]; });
   const surprise = () => {
     const pool = flavors.filter(isAvailable);
     if (!pool.length) return;
-    setSlots((s) => [...s, ...Array.from({ length: box.slots - s.length }, () => pool[Math.floor(Math.random() * pool.length)].id)]);
+    const picks = [...slots];
+    for (let tries = 0; picks.length < box.slots && tries < 200; tries++) {
+      const p = pool[Math.floor(Math.random() * pool.length)];
+      if (p.stock_quantity == null || picks.filter((id) => id === p.id).length < p.stock_quantity) picks.push(p.id);
+    }
+    setSlots(picks);
   };
   const addToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     const first = byId(slots[0]);
@@ -94,7 +107,7 @@ export function BoxBuilder({ boxes, products, initialSize }: { boxes: BoxSize[];
                     <div className="mt-2 flex items-center justify-between rounded-full bg-pink-tint p-1">
                       <button type="button" onClick={() => removeOne(p.id)} className="grid h-9 w-9 place-items-center rounded-full bg-white" aria-label={`Remove one ${p.name}`}><Minus className="h-4 w-4" /></button>
                       <span className="font-display text-lg font-semibold" aria-live="polite">{n}</span>
-                      <button type="button" onClick={() => addOne(p.id)} disabled={remaining === 0} className="grid h-9 w-9 place-items-center rounded-full bg-white disabled:opacity-40" aria-label={`Add one more ${p.name}`}><Plus className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => addOne(p.id)} disabled={remaining === 0 || atStock(p.id)} className="grid h-9 w-9 place-items-center rounded-full bg-white disabled:opacity-40" aria-label={`Add one more ${p.name}`}><Plus className="h-4 w-4" /></button>
                     </div>
                   )}
                 </li>

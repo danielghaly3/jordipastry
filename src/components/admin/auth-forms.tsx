@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { House, Loader2 } from "lucide-react";
 import { requestReset, signIn, updatePassword } from "@/app/admin/auth-actions";
 import { inputClass } from "@/components/checkout/field";
 import { btn } from "@/components/ui/button";
@@ -29,6 +29,10 @@ export function LoginForm({ notice }: { notice?: string }) {
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={btn("primary", "lg", "w-full")}>{pending && <Loader2 className="h-5 w-5 animate-spin" />} Sign in</button>
       <Link href="/admin/forgot-password" className="text-center text-sm font-semibold text-pink-ink hover:underline">Forgot your password?</Link>
+      <Link href="/" className={btn("secondary", "lg", "mt-1 w-full")}>
+        <House className="h-5 w-5" aria-hidden="true" />
+        Back to home
+      </Link>
     </form>
   );
 }

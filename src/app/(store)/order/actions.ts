@@ -1,4 +1,5 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { z } from "zod";
 import { getOrderByToken } from "@/lib/data";
@@ -26,13 +27,21 @@ export async function createReceiptUpload(t: string, contentType: string): Promi
   return ok({ path, uploadToken: data.token });
 }
 
-const reportSchema = z.object({ token, reference: z.string().trim().max(120).optional().default(""), receiptPath: z.string().max(200).nullable().optional() });
+// Receipt paths are issued by createReceiptUpload as "<order uuid>/<random uuid>.<ext>".
+const RECEIPT_PATH = /^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp|pdf)$/;
+const reportSchema = z.object({ token, reference: z.string().trim().max(120).optional().default(""), receiptPath: z.string().regex(RECEIPT_PATH).nullable().optional() });
 
 export async function reportPayment(input: z.input<typeof reportSchema>): Promise<ActionResult<{ changed: boolean }>> {
   const parsed = reportSchema.safeParse(input);
   if (!parsed.success) return fail("Please check the reference and try again.");
   if (!(await rateLimit("report", 10, 600))) return fail("Too many attempts. Please wait a few minutes.");
   const { token: t, reference, receiptPath } = parsed.data;
+  if (receiptPath) {
+    // Don't let a report claim "receipt attached" unless the upload actually happened.
+    const [folder, file] = receiptPath.split("/");
+    const { data: found } = await createServiceClient().storage.from("payment-receipts").list(folder, { search: file, limit: 1 });
+    if (!found?.some((f) => f.name === file)) return fail("We couldn't find your uploaded receipt. Please upload it again.");
+  }
   const { data, error } = await createServiceClient().rpc("report_payment", { p_token: t, p_reference: reference, p_receipt_path: receiptPath ?? null });
   if (error) return fail(friendlyError(error));
   const r = data as { changed: boolean; order_id: string; report_count?: number };
@@ -49,13 +58,18 @@ export async function submitReview(input: z.input<typeof reviewSchema>): Promise
   if (!(await rateLimit("review", 5, 3600))) return fail("Too many attempts. Please try later.");
   const d = parsed.data;
   const { error } = await createServiceClient().rpc("submit_review", { p_token: d.token, p_name: d.name, p_rating: d.rating, p_body: d.body });
-  return error ? fail(friendlyError(error)) : ok(null);
+  if (error) return fail(friendlyError(error));
+  revalidatePath("/"); // reviews show on the cached homepage
+  return ok(null);
 }
 
+// Catches bare domains like "evil.com" too, not just http:// and www. links.
+const LINKISH = /(https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|info|biz|me|io|co|xyz|eg|link|ly|ru|top|site|online|shop)\b)/i;
+const noLinks = (v: string) => !LINKISH.test(v);
 const publicReviewSchema = z.object({
-  name: z.string().trim().min(2, "Please add your name").max(40),
+  name: z.string().trim().min(2, "Please add your name").max(40).refine(noLinks, "Please leave out links in your name."),
   rating: z.number().int().min(1, "Please choose a rating").max(5),
-  body: z.string().trim().min(3, "Please write a few words").max(400),
+  body: z.string().trim().min(3, "Please write a few words").max(400).refine(noLinks, "Please leave out links in your review."),
   website: z.string().max(0).optional().default(""), // honeypot
   cardStyle: z.enum(CARD_STYLES.map((c) => c.id)).default("classic"),
   treat: z.enum(TREATS.map((t) => t.id)).default("donut"),
@@ -69,7 +83,11 @@ export async function postPublicReview(input: z.input<typeof publicReviewSchema>
     return fail(issue?.path[0] === "website" ? "Something went wrong. Please try again." : issue?.message ?? "Please check your review.");
   }
   if (!(await rateLimit("public_review", 3, 86400))) return fail("Thanks! You've already shared a few reviews today.");
+  // Site-wide cap so a burst from many connections can't flood the homepage.
+  if (!(await rateLimit("public_review", 25, 86400, false, "all"))) return fail("We've had lots of reviews today. Please try again tomorrow!");
   const d = parsed.data;
   const { error } = await createServiceClient().rpc("post_public_review", { p_name: d.name, p_rating: d.rating, p_body: d.body, p_ip_hash: await clientIpHash(), p_card_style: d.cardStyle, p_treat: d.treat });
-  return error ? fail(friendlyError(error)) : ok(null);
+  if (error) return fail(friendlyError(error));
+  revalidatePath("/"); // reviews show on the cached homepage
+  return ok(null);
 }

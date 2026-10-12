@@ -11,9 +11,12 @@ export async function clientIpHash() {
   return createHmac("sha256", process.env.SUPABASE_SECRET_KEY ?? "jordi").update(ip).digest("hex").slice(0, 32);
 }
 
-/** Returns true when allowed. By default fails open if the database errors (ordering must not break because of the limiter). */
-export async function rateLimit(action: string, max: number, windowSeconds: number, failClosed = false) {
-  const key = `${action}:${await clientIpHash()}`;
+/**
+ * Returns true when allowed. By default fails open if the database errors (ordering must not break because of the limiter).
+ * `scope: "all"` counts every visitor together (a site-wide cap) instead of per connection.
+ */
+export async function rateLimit(action: string, max: number, windowSeconds: number, failClosed = false, scope: "ip" | "all" = "ip") {
+  const key = `${action}:${scope === "all" ? "all" : await clientIpHash()}`;
   const { data, error } = await createServiceClient().rpc("hit_rate_limit", { p_key: key, p_max: max, p_window_seconds: windowSeconds });
   if (error) {
     console.error("rate limit check failed", error.message);

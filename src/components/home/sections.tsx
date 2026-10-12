@@ -38,7 +38,7 @@ export function BestSellers({ products, real }: { products: Product[]; real: boo
 
 const TILE_STYLES = [
   "bg-pink-ink text-white [&_.count]:text-white",
-  "bg-accent text-cocoa",
+  "bg-accent-ink text-white [&_.count]:text-white",
   "bg-white text-cocoa ring-1 ring-line",
   "bg-pink-soft text-cocoa",
   "bg-cocoa text-cream [&_.count]:text-cream/80",
@@ -160,7 +160,7 @@ export function WhyJordi({ store, hasBoxes }: { store: PublicSettings["store"]; 
       <Reveal className="relative">
         <span className="mb-5 block h-4 w-24 rounded-[50%] border-4 border-accent" aria-hidden="true" />
         <h2 id="why-title" className="font-display text-[clamp(1.9rem,4vw,3.2rem)] font-bold leading-[1.1] tracking-[-0.02em]">
-          Why <span className="text-pink-ink">Jordi?</span>
+          Why <span className="script-accent text-pink-ink">Jordi?</span>
         </h2>
         <p className="mt-4 max-w-sm text-lg text-cocoa-muted">A small bakery with a big sweet tooth, and ordering that just works.</p>
       </Reveal>

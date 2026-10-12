@@ -6,7 +6,7 @@ export function normalizeEgyptPhone(input: string): string | null {
   const ascii = input.replace(ARABIC_DIGITS, (d) => String(d.charCodeAt(0) & 0xf));
   let digits = ascii.replace(/[^\d]/g, "");
   if (digits.startsWith("0020")) digits = digits.slice(4);
-  else if (digits.startsWith("20") && digits.length === 12) digits = digits.slice(2);
+  else if (digits.startsWith("20") && (digits.length === 12 || digits.length === 13)) digits = digits.slice(2); // 13 = "+20 010…"
   if (digits.length === 10 && digits.startsWith("1")) digits = "0" + digits;
   return /^01[0125]\d{8}$/.test(digits) ? `+2${digits}` : null;
 }

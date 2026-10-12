@@ -175,14 +175,14 @@ function TimelineStep({ step, index, last, state, refCb }: { step: Step; index: 
   const reached = state !== "idle";
   return (
     <li ref={refCb} className={`relative grid grid-cols-[56px_1fr] gap-x-4 md:grid-cols-[1fr_72px_1fr] md:gap-x-6 ${last ? "" : "pb-14 md:pb-16"}`} aria-current={state === "active" ? "step" : undefined}>
-      {/* number -> check; the active step gets a gentle breathing ring */}
+      {/* number -> check; the active step gets a pulsing ring */}
       <span className="relative z-10 col-start-1 row-span-2 flex justify-center md:col-start-2 md:row-span-1 md:row-start-1 md:items-center">
-        <span className="relative">
+        <span className="relative block h-12 w-12 md:h-14 md:w-14">
           {state === "active" && (
             <motion.span
-              className="absolute inset-0 rounded-full bg-pink-soft"
+              className="absolute inset-0 rounded-full bg-pink"
               initial={false}
-              animate={{ scale: [1, 1.28, 1], opacity: 0.65 }}
+              animate={{ scale: [1, 1.7, 1], opacity: 0.5 }}
               transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
               aria-hidden="true"
             />
@@ -193,7 +193,9 @@ function TimelineStep({ step, index, last, state, refCb }: { step: Step; index: 
             transition={{ duration: 0.4 }}
             style={{ boxShadow: "0 0 0 2px var(--pink-soft)" }}
           >
-            {reached ? <Check className="h-6 w-6" strokeWidth={3} /> : index + 1}
+            {reached ? (
+              <Check className="h-6 w-6" strokeWidth={3} />
+            ) : index + 1}
           </motion.span>
         </span>
       </span>
@@ -207,7 +209,7 @@ function TimelineStep({ step, index, last, state, refCb }: { step: Step; index: 
       </motion.div>
       {/* words */}
       <motion.div
-        animate={{ opacity: reached ? 1 : 0.6, x: 0 }}
+        animate={{ opacity: reached ? 1 : 0.85, x: 0 }} // upcoming steps stay readable (contrast)
         transition={{ duration: 0.5, ease }}
         className={`col-start-2 row-start-2 mt-4 md:row-start-1 md:mt-0 md:self-center ${flip ? "md:col-start-1 md:text-right" : "md:col-start-3"}`}
       >
@@ -259,7 +261,7 @@ export function OrderTimeline({ instapay, delivery, pickup }: { instapay: boolea
       <div className="mx-auto max-w-[1000px] px-5 md:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 id="how-title" className="font-display text-[clamp(1.6rem,3.4vw,2.6rem)] font-bold leading-[1.1] tracking-[-0.015em]">How Ordering Works</h2>
-          <p className="mt-3 font-[family-name:var(--font-script)] text-2xl text-pink-ink">From our oven to your hands</p>
+          <p className="mt-3 font-[family-name:var(--font-script)] text-3xl text-pink-ink">From our oven to your hands</p>
         </div>
         <ol ref={ref} className="relative mt-14">
           {/* the path: dashed blush line, filled in rose as you scroll */}

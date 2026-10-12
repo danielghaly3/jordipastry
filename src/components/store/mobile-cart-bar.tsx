@@ -5,11 +5,17 @@ import { ShoppingBag } from "lucide-react";
 import { cart, useCart } from "@/lib/cart/store";
 import { formatEGP } from "@/lib/format";
 
+/** True when the phone cart bar is on screen (other floating buttons sit above it). */
+export function useCartBarShown() {
+  const { count, isOpen } = useCart();
+  const path = usePathname();
+  return !(isOpen || count === 0 || path.startsWith("/checkout") || path.startsWith("/cart") || path.startsWith("/order") || path.startsWith("/build-a-box"));
+}
+
 /** Floating order button on phones, once there is something in the cart. */
 export function MobileCartBar() {
-  const { count, subtotal, isOpen } = useCart();
-  const path = usePathname();
-  const hidden = isOpen || count === 0 || path.startsWith("/checkout") || path.startsWith("/cart") || path.startsWith("/order") || path.startsWith("/build-a-box");
+  const { count, subtotal } = useCart();
+  const hidden = !useCartBarShown();
   return (
     <AnimatePresence>
       {!hidden && (

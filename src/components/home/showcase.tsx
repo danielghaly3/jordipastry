@@ -15,6 +15,22 @@ import { effectivePrice, isAvailable, type Product } from "@/lib/types";
 
 const img = (p: Product) => (p.images[0] ? publicImageUrl("product-images", p.images[0].storage_path) : null);
 
+const STAR_IMAGES: Record<string, string> = {
+  "glazed-donut": "/images/showcase/glazed-donut.webp",
+  "dark-chocolate-donut": "/images/showcase/dark-chocolate-donut.webp",
+  "lotus-donut": "/images/showcase/lotus-donut.webp",
+  "classic-chocolate-roll": "/images/showcase/classic-chocolate-roll.webp",
+  "classic-white-chocolate-roll": "/images/showcase/classic-white-chocolate-roll.webp",
+  "chocolate-cookie": "/images/showcase/chocolate-cookie.webp",
+  "cookie-tart": "/images/showcase/cookie-tart.webp",
+  "large-cookie-tart": "/images/showcase/large-cookie-tart.webp",
+  "white-chocolate-cookie": "/images/showcase/white-chocolate-cookie.webp",
+};
+
+// Owner-uploaded product photography always wins over the curated showcase cutouts.
+const starImg = (p: Product) => img(p) ?? STAR_IMAGES[p.slug] ?? null;
+const hasStarCutout = (p: Product) => !img(p) && Boolean(STAR_IMAGES[p.slug]);
+
 function darkBackground(hex: string) {
   const [r, g, b] = [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
   return (r * 299 + g * 587 + b * 114) / 1000 < 145;
@@ -66,17 +82,18 @@ function FeaturedCard({ product }: { product: Product }) {
             transition={{ type: "spring", stiffness: 180, damping: 20 }}
             className="absolute inset-[14%_18%_6%]"
           >
-            <ProductImageClient name={product.name} flavor={product.flavor} url={img(product)} className={`h-full w-full ${img(product) ? "overflow-hidden rounded-full" : ""}`} />
+            <ProductImageClient name={product.name} flavor={product.flavor} url={starImg(product)} contain={hasStarCutout(product)} className={`h-full w-full ${img(product) ? "overflow-hidden rounded-full" : ""}`} />
           </motion.div>
         </AnimatePresence>
       </div>
       <div className="space-y-4 p-6" style={{ backgroundColor: glaze }}>
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <h3 className="font-display text-[clamp(1.3rem,2.4vw,1.7rem)] font-bold leading-tight">{product.name}</h3>
-            {product.name_ar && <p lang="ar" dir="rtl" className={`mt-1 text-sm font-medium ${dark ? "text-white/80" : "text-cocoa-muted"}`}>{product.name_ar}</p>}
+        {/* Fixed-height header (2 name lines + Arabic line) so swiping between items doesn't make the card jump */}
+        <div className="flex min-h-[5.25rem] items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="line-clamp-2 font-display text-[clamp(1.3rem,2.4vw,1.7rem)] font-bold leading-tight">{product.name}</h3>
+            {product.name_ar && <p lang="ar" dir="rtl" className={`mt-1 truncate text-sm font-medium ${dark ? "text-white/80" : "text-cocoa-muted"}`}>{product.name_ar}</p>}
           </div>
-          <span className="font-display text-2xl font-bold">{formatEGP(unit)}</span>
+          <span className="shrink-0 whitespace-nowrap font-display text-2xl font-bold">{formatEGP(unit)}</span>
         </div>
         {product.description && <p className={`line-clamp-2 text-[15px] ${dark ? "text-white/90" : "text-cocoa-muted"}`}>{product.description}</p>}
         <div className="flex flex-wrap items-center gap-2">
@@ -118,10 +135,10 @@ function MiniCard({ product, onSelect }: { product: Product; onSelect: () => voi
     <button
       type="button"
       onClick={onSelect}
-      className="group flex h-full w-full flex-col items-center rounded-[28px] bg-white p-5 text-center shadow-cloud transition hover:-translate-y-1 hover:shadow-lift"
+      className="group flex h-full w-full flex-col items-center rounded-[28px] bg-white p-5 text-center shadow-cloud"
       aria-label={`Feature ${product.name}`}
     >
-      <ProductImageClient name={product.name} flavor={product.flavor} url={img(product)} className={`aspect-square w-[78%] transition-transform duration-500 group-hover:rotate-12 ${img(product) ? "overflow-hidden rounded-full" : ""}`} />
+      <ProductImageClient name={product.name} flavor={product.flavor} url={starImg(product)} contain={hasStarCutout(product)} className={`aspect-square w-[78%] transition-transform duration-500 group-hover:rotate-12 ${img(product) ? "overflow-hidden rounded-full" : ""}`} />
       <span className="mt-3 font-display text-lg font-semibold leading-tight">{product.name}</span>
       {product.name_ar && <span lang="ar" dir="rtl" className="mt-1 text-sm font-medium text-cocoa-muted">{product.name_ar}</span>}
       <span className="mt-1 font-display text-base font-semibold text-accent-ink">{formatEGP(effectivePrice(product))}</span>
@@ -132,7 +149,7 @@ function MiniCard({ product, onSelect }: { product: Product; onSelect: () => voi
 
 function Arrow({ dir, onClick }: { dir: 1 | -1; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-cocoa shadow-cloud ring-1 ring-line transition hover:bg-pink-tint active:scale-95" aria-label={dir === 1 ? "Next donut" : "Previous donut"}>
+    <button type="button" onClick={onClick} className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-cocoa shadow-cloud ring-1 ring-line transition hover:bg-pink-tint active:scale-95" aria-label={dir === 1 ? "Next treat" : "Previous treat"}>
       {dir === 1 ? <ArrowRight className="h-5 w-5" /> : <ArrowLeft className="h-5 w-5" />}
     </button>
   );
@@ -151,8 +168,9 @@ export function Showcase({ products }: { products: Product[] }) {
     <div aria-roledescription="carousel" aria-label="Featured treats">
       {/* Desktop: featured card among its neighbours */}
       <div className="hidden items-center gap-5 lg:flex">
-        {n > 1 && <Arrow dir={-1} onClick={() => go(-1)} />}
-        <div className="flex flex-1 items-center justify-center gap-5">
+        {/* Arrows are pinned to the photo's middle (5:4 photo on a 360px / 380px card), so they never move */}
+        {n > 1 && <div className="self-start lg:mt-[120px] xl:mt-[128px]"><Arrow dir={-1} onClick={() => go(-1)} /></div>}
+        <div className="flex flex-1 items-start justify-center gap-5">
           {visible.map(({ product, index }) => (
             <motion.div
               layout
@@ -164,15 +182,23 @@ export function Showcase({ products }: { products: Product[] }) {
             </motion.div>
           ))}
         </div>
-        {n > 1 && <Arrow dir={1} onClick={() => go(1)} />}
+        {n > 1 && <div className="self-start lg:mt-[120px] xl:mt-[128px]"><Arrow dir={1} onClick={() => go(1)} /></div>}
       </div>
 
       {/* Mobile/tablet: one card + thumbnail strip */}
       <div className="lg:hidden">
-        <div className="mx-auto max-w-[440px]"><FeaturedCard key={current.id} product={current} /></div>
+        <div className="relative mx-auto max-w-[440px]">
+          <FeaturedCard key={current.id} product={current} />
+          {/* Arrows sit on the photo (always 5:4), so the card's changing height can't move them */}
+          {n > 1 && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 flex aspect-[5/4] items-center justify-between px-2">
+              <span className="pointer-events-auto"><Arrow dir={-1} onClick={() => go(-1)} /></span>
+              <span className="pointer-events-auto"><Arrow dir={1} onClick={() => go(1)} /></span>
+            </div>
+          )}
+        </div>
         {n > 1 && (
-          <div className="mt-5 flex items-center gap-3">
-            <Arrow dir={-1} onClick={() => go(-1)} />
+          <div className="mt-5">
             <ul className="no-scrollbar flex flex-1 snap-x gap-3 overflow-x-auto py-2">
               {products.map((p, i) => (
                 <li key={p.id} className="snap-center">
@@ -183,12 +209,11 @@ export function Showcase({ products }: { products: Product[] }) {
                     aria-current={i === active}
                     className={`grid h-16 w-16 place-items-center rounded-full bg-white shadow-cloud transition ${i === active ? "ring-[3px] ring-accent" : "ring-1 ring-line"}`}
                   >
-                    <ProductImageClient name={p.name} flavor={p.flavor} url={img(p)} className={`h-14 w-14 ${img(p) ? "overflow-hidden rounded-full" : ""}`} />
+                    <ProductImageClient name={p.name} flavor={p.flavor} url={starImg(p)} contain={hasStarCutout(p)} className={`h-14 w-14 ${img(p) ? "overflow-hidden rounded-full" : ""}`} />
                   </button>
                 </li>
               ))}
             </ul>
-            <Arrow dir={1} onClick={() => go(1)} />
           </div>
         )}
       </div>

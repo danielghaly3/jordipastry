@@ -5,8 +5,8 @@ import { readSetting, type PublicSettings } from "@/lib/settings";
 import { createPublicClient, createServiceClient } from "@/lib/supabase/server";
 import type { BoxSize, Category, DeliveryArea, Order, OrderItem, Product, Review } from "@/lib/types";
 
-// shortcut: no data cache, every request reads Supabase (always fresh after admin edits).
-// If traffic grows, wrap these in 'use cache' + cacheTag and call updateTag from admin actions.
+// Store pages are prerendered (ISR, revalidate in app/layout.tsx), so these run at build/revalidation
+// time, not per visit. Anything that changes what customers see must call revalidatePath("/", ...).
 
 export const PRODUCT_SELECT =
   "id,slug,name,name_ar,description,price,sale_price,flavor,ingredients,allergens,is_visible,is_sold_out,is_featured,stock_quantity,box_surcharge,sort_order,is_sample,archived_at,category_id," +
@@ -94,7 +94,7 @@ export async function getApprovedReviews(): Promise<Review[]> {
     .select("id,display_name,rating,body,created_at,verified,card_style,treat")
     .eq("is_approved", true)
     .order("created_at", { ascending: false })
-    .limit(12);
+    .limit(24); // newest first: a just-posted review appears straight away
   return data ?? [];
 }
 

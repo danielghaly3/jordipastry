@@ -1,16 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans_Arabic, Unbounded } from "next/font/google";
+import { Courgette, Fredoka, Nunito, Tajawal } from "next/font/google";
 import { Toaster } from "sonner";
 import { getPublicSettings } from "@/lib/data";
 import { SITE_URL } from "@/lib/env";
 import { ACCENTS, PALETTES } from "@/lib/settings";
 import "./globals.css";
 
-// Brand fonts: Unbounded for display, IBM Plex Sans Arabic for body text (covers Latin + Arabic).
-const unbounded = Unbounded({ subsets: ["latin"], variable: "--font-unbounded", weight: ["400", "500", "600", "700"] });
-const plexArabic = IBM_Plex_Sans_Arabic({ subsets: ["arabic", "latin"], variable: "--font-plex-arabic", weight: ["400", "500", "600", "700"] });
+// Brand fonts: Fredoka for display, Nunito for body text (rounded, matches Fredoka), Tajawal for Arabic,
+// Courgette (smooth, friendly connected script) for handwritten accent words.
+// Fredoka and Nunito are variable fonts: one file covers every weight (smaller download than 4 static files).
+const fredoka = Fredoka({ subsets: ["latin"], variable: "--font-fredoka" });
+const courgette = Courgette({ subsets: ["latin"], variable: "--font-courgette", weight: "400" });
+const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito" });
+const tajawal = Tajawal({ subsets: ["arabic"], variable: "--font-tajawal", weight: ["400", "500", "700"] });
 
-export const dynamic = "force-dynamic";
+// Store pages are cached and served from the edge. Admin/checkout actions call revalidatePath
+// whenever something customers see changes; this is only a safety net.
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { branding, homepage } = await getPublicSettings();
@@ -37,7 +43,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } as React.CSSProperties;
 
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${unbounded.variable} ${plexArabic.variable}`} style={vars}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${fredoka.variable} ${nunito.variable} ${tajawal.variable} ${courgette.variable}`} style={vars}>
       <body className="min-h-dvh">
         {children}
         <Toaster position="top-center" richColors closeButton toastOptions={{ style: { fontFamily: "var(--font-sans)", borderRadius: 18 } }} />

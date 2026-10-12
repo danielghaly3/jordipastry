@@ -17,6 +17,7 @@ export async function updateOrder(orderId: string, action: OrderAction, note?: s
   const { error } = await admin.supabase.rpc("admin_update_order", { p_order_id: orderId, p_action: action, p_note: note ?? null });
   if (error) return fail(friendlyError(error));
   if (action === "cancel") after(() => notifyOrderEvent(orderId, "order_canceled"));
-  revalidatePath("/admin", "layout");
+  // Whole site: canceling returns stock, which the cached store pages show.
+  revalidatePath("/", "layout");
   return ok(null);
 }

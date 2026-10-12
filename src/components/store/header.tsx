@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Menu, ShoppingBag, X } from "lucide-react";
+import { Menu, ShoppingBag, UserRound, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { cart, useCart } from "@/lib/cart/store";
 
@@ -48,9 +48,9 @@ export function Header({ branding }: { branding: Branding }) {
   };
 
   return (
-    <header className="sticky top-0 z-40 px-3 md:px-6">
-      <div className="mx-auto max-w-[1240px] rounded-b-[28px] bg-white shadow-cloud md:rounded-b-[36px]">
-        <nav className="flex h-[68px] items-center justify-between gap-4 px-4 md:h-[72px] md:px-8" aria-label="Main">
+    <header className="sticky top-3 z-40 mt-3 px-3 md:px-6">
+      <div className="mx-auto max-w-[1240px] rounded-[34px] bg-white shadow-cloud md:rounded-[36px]">
+        <nav className="relative z-10 flex h-[68px] items-center justify-between gap-4 px-4 md:h-[72px] md:px-8" aria-label="Main">
           <Link href="/" className="shrink-0 rounded-2xl" aria-label={`${branding.store_name} home`}>
             <Logo branding={branding} />
           </Link>
@@ -117,6 +117,14 @@ export function Header({ branding }: { branding: Branding }) {
           </ul>
 
           <div className="flex items-center gap-1.5">
+            <Link
+              href="/admin/login"
+              className="hidden h-12 w-12 lg:grid place-items-center rounded-full text-cocoa transition hover:bg-pink-tint active:scale-95"
+              aria-label="Owner login"
+              title="Owner login"
+            >
+              <UserRound className="h-6 w-6" strokeWidth={2} />
+            </Link>
             <button
               type="button"
               onClick={() => cart.setOpen(true)}
@@ -160,7 +168,7 @@ export function Header({ branding }: { branding: Branding }) {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="overflow-hidden lg:hidden"
+              className="relative z-10 overflow-hidden lg:hidden"
             >
               <ul className="grid gap-1 px-4 pb-5">
                 {LINKS.map((l) => (
@@ -178,6 +186,15 @@ export function Header({ branding }: { branding: Branding }) {
                     </Link>
                   </li>
                 ))}
+                <li className="mt-1 border-t border-line pt-2">
+                  <Link
+                    href="/admin/login"
+                    onClick={() => setOpen(false)}
+                    className="flex h-12 items-center gap-3 rounded-2xl px-4 font-medium text-cocoa-muted transition hover:bg-pink-tint hover:text-pink-ink"
+                  >
+                    <UserRound className="h-5 w-5" /> Owner login
+                  </Link>
+                </li>
               </ul>
             </motion.div>
           )}

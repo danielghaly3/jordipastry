@@ -6,6 +6,9 @@ import { availableSlots } from "@/lib/schedule";
 
 export const metadata: Metadata = { title: "Checkout", robots: { index: false } };
 
+// Time slots are computed from "now", so this page must not be served from the static cache.
+export const dynamic = "force-dynamic";
+
 export default async function CheckoutPage() {
   const [{ store }, areas] = await Promise.all([getPublicSettings(), getDeliveryAreas()]);
   return (

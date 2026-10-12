@@ -33,7 +33,7 @@ export const checkoutSchema = quoteSchema.extend({
   requested_time: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
   notes: z.string().trim().max(500).optional().default(""),
   website: z.string().max(0).optional().default(""), // honeypot: real people never fill this
-});
+}).refine((d) => !d.requested_date || !!d.requested_time, { message: "Please pick a time for your chosen day.", path: ["requested_time"] });
 
 export type CheckoutInput = z.input<typeof checkoutSchema>;
 export type Quote = {

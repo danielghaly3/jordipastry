@@ -39,9 +39,10 @@ The owner can switch brand colors only between **pre-validated presets** (Websit
 
 ## Typography
 
-- **Display:** Unbounded (400–700). Use it for headings, product names, prices, ribbons and nav. It is very wide, so heading sizes are about 20% smaller than for a serif, with tracking at -0.02em. Use medium weight for nav links.
-- **Body/UI + Arabic:** IBM Plex Sans Arabic (400–700) for all body text, forms and admin. It also renders the Arabic menu names, so English and Arabic share one typeface.
-- Tagline-style accents use Unbounded too; no third family.
+- **Display:** Fredoka (400–700): soft, rounded letters for headings, product names, prices, ribbons and nav. Keep tracking near neutral (rounded letters crowd when tightened). Use medium weight for nav links.
+- **Body/UI:** Nunito (variable): rounded like Fredoka, for all body text, forms and admin.
+- **Arabic:** Tajawal (400/500/700) for the Arabic menu names and search; it is also the fallback for any Arabic inside English text.
+- **Script accent:** Courgette (single weight 400, never bolded; picked by the owner from a side-by-side comparison), via `.script-accent` (1.1em, inside headings) or `font-[family-name:var(--font-script)]` (taglines). Use it for one highlighted word per heading and short taglines only, never for body text, prices or Arabic.
 - Prices: `EGP 45` in cards and checkout.
 
 ## Shape rule (one documented system)

@@ -7,10 +7,11 @@ import { Quantity } from "@/components/store/quantity";
 import { cart, type CartLine } from "@/lib/cart/store";
 import { formatEGP } from "@/lib/format";
 
-export function CartLines({ items, onNavigate }: { items: CartLine[]; onNavigate?: () => void }) {
+/** lineTotals: server-quoted totals (checkout), so lines always add up to the quoted subtotal. */
+export function CartLines({ items, onNavigate, lineTotals }: { items: CartLine[]; onNavigate?: () => void; lineTotals?: number[] }) {
   return (
     <ul className="divide-y divide-line">
-      {items.map((l) => (
+      {items.map((l, i) => (
         <li key={l.key} className="flex gap-4 py-4">
           <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-[20px] bg-pink-tint">
             {l.type === "product" ? (
@@ -39,7 +40,7 @@ export function CartLines({ items, onNavigate }: { items: CartLine[]; onNavigate
             </p>
             <div className="mt-2 flex items-center justify-between gap-2">
               <Quantity size="sm" value={l.quantity} min={0} onChange={(q) => cart.setQuantity(l.key, q)} label={`Quantity of ${l.name}`} />
-              <span className="font-display text-lg font-semibold">{formatEGP(l.unitPrice * l.quantity)}</span>
+              <span className="font-display text-lg font-semibold">{formatEGP(lineTotals?.[i] ?? l.unitPrice * l.quantity)}</span>
             </div>
           </div>
         </li>

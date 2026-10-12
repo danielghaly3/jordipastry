@@ -42,10 +42,10 @@
   --color-bad-tint: var(--bad-tint);
   --color-info: var(--info);
   --color-info-tint: var(--info-tint);
-  --font-display: var(--font-unbounded), system-ui, sans-serif;
-  --font-script: var(--font-unbounded), system-ui, sans-serif;
-  --font-arabic: var(--font-plex-arabic), system-ui, sans-serif;
-  --font-sans: var(--font-plex-arabic), system-ui, sans-serif;
+  --font-display: var(--font-fredoka), system-ui, sans-serif;
+  --font-script: var(--font-courgette), cursive;
+  --font-arabic: var(--font-tajawal), system-ui, sans-serif;
+  --font-sans: var(--font-nunito), var(--font-tajawal), system-ui, sans-serif; /* Arabic glyphs fall through to Tajawal */
   --shadow-cloud: 0 1px 2px rgb(43 34 32 / 0.06), 0 12px 32px -12px rgb(168 82 78 / 0.28);
   --shadow-lift: 0 2px 4px rgb(43 34 32 / 0.06), 0 22px 44px -16px rgb(168 82 78 / 0.36);
   --animate-float: float 6s ease-in-out infinite;
@@ -99,9 +99,9 @@ body {
   color: var(--cocoa);
 }
 
-/* Unbounded is wide: tighten tracking a touch so headings stay compact */
+/* Fredoka's rounded letters crowd if tracked tight: keep it close to neutral */
 .font-display {
-  letter-spacing: -0.02em;
+  letter-spacing: -0.005em;
 }
 
 [lang="ar"] {
@@ -125,4 +125,14 @@ input[type="number"]::-webkit-outer-spin-button {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Handwritten accent word inside a heading (e.g. "Our Menu"), sized up a touch to sit level with the heading. */
+.script-accent {
+  font-family: var(--font-script);
+  font-weight: 400; /* Courgette has one weight; bolding would be faked */
+  font-size: 1.1em;
+  letter-spacing: 0;
+  margin-inline-start: 0.1em; /* room for leading swashes (the J in "Jordi") */
+  line-height: 1;
 }

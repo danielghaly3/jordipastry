@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Fragment, useRef } from "react";
-import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
+import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from "motion/react";
 import { ArrowRight, Sparkle } from "lucide-react";
 import { DonutArt } from "@/components/brand/donut-art";
 import { LogoMark } from "@/components/brand/logo";
@@ -12,11 +12,12 @@ import { btn } from "@/components/ui/button";
 
 type Donut = { name: string; flavor: string | null; image: string | null };
 
-function Floating({ donut, className, depth, x, y, sizes, preload }: {
-  donut: Donut; className: string; depth: number; x: ReturnType<typeof useSpring>; y: ReturnType<typeof useSpring>; sizes: string; preload?: boolean;
+function Floating({ donut, className, depth, x, y, scroll, sizes, preload }: {
+  donut: Donut; className: string; depth: number; x: ReturnType<typeof useSpring>; y: ReturnType<typeof useSpring>; scroll: MotionValue<number>; sizes: string; preload?: boolean;
 }) {
   const tx = useTransform(x, (v) => v * depth);
-  const ty = useTransform(y, (v) => v * depth);
+  // Mouse parallax plus a scroll drift (deeper items move further), so touch screens get depth too.
+  const ty = useTransform([y, scroll], ([v, p]: number[]) => v * depth - p * 120 * depth);
   return (
     <motion.div style={{ x: tx, y: ty }} className={`absolute ${className}`}>
       <div className="h-full w-full animate-float [animation-delay:var(--d,0s)]">
@@ -88,9 +89,9 @@ export function Hero({ headline, description, ctaPrimary, ctaSecondary, heroImag
           <h1 className="font-display text-[clamp(2.1rem,5.4vw,4.1rem)] font-bold leading-[1.1] tracking-[-0.02em] text-cocoa">
             {[...words, last].map((w, i) => (
               <Fragment key={i}>
-              <span className="inline-block overflow-hidden pb-[0.14em] align-bottom">
+              <span className={`inline-block overflow-hidden pb-[0.14em] align-bottom ${i === words.length ? "pr-[0.12em]" : ""}`}>
                 <motion.span
-                  className={`inline-block ${i === words.length ? "text-pink-ink" : ""}`}
+                  className={`inline-block ${i === words.length ? "script-accent text-pink-ink" : ""}`}
                   initial={{ y: "105%" }}
                   animate={{ y: 0 }}
                   transition={{ duration: 0.75, delay: 0.08 * i, ease: [0.16, 1, 0.3, 1] }}
@@ -142,10 +143,10 @@ export function Hero({ headline, description, ctaPrimary, ctaSecondary, heroImag
             ))}
           </div>
           <TaglineBadge text={tagline} />
-          <Floating donut={main} depth={0.6} x={x} y={y} sizes="(max-width: 1024px) 60vw, 330px" preload className="left-[21%] top-[22%] h-[58%] w-[58%]" />
-          <Floating donut={others[0]} depth={1.4} x={x} y={y} sizes="140px" className="left-0 top-[8%] h-[24%] w-[24%] [--d:-2s]" />
-          <Floating donut={others[1]} depth={1.1} x={x} y={y} sizes="160px" className="bottom-[2%] right-[2%] h-[28%] w-[28%] [--d:-4s]" />
-          <Floating donut={others[2]} depth={1.8} x={x} y={y} sizes="110px" className="bottom-[30%] left-[-2%] h-[16%] w-[16%] [--d:-1s]" />
+          <Floating donut={main} depth={0.6} x={x} y={y} scroll={scrollYProgress} sizes="(max-width: 1024px) 60vw, 330px" preload className="left-[21%] top-[22%] h-[58%] w-[58%]" />
+          <Floating donut={others[0]} depth={1.4} x={x} y={y} scroll={scrollYProgress} sizes="140px" className="left-0 top-[8%] h-[24%] w-[24%] [--d:-2s]" />
+          <Floating donut={others[1]} depth={1.1} x={x} y={y} scroll={scrollYProgress} sizes="160px" className="bottom-[2%] right-[2%] h-[28%] w-[28%] [--d:-4s]" />
+          <Floating donut={others[2]} depth={1.8} x={x} y={y} scroll={scrollYProgress} sizes="110px" className="bottom-[30%] left-[-2%] h-[16%] w-[16%] [--d:-1s]" />
         </motion.div>
       </div>
     </section>

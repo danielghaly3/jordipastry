@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { notifyOrderEvent } from "@/lib/notify";
@@ -19,6 +20,7 @@ export async function GET(request: NextRequest) {
   const hours = store.attention_after_hours;
   // Release stock and capacity held by InstaPay orders nobody paid for.
   const { data: canceled } = await db.rpc("cancel_stale_orders", { p_hours: store.auto_cancel_unpaid_hours });
+  if ((canceled as string[] | null)?.length) revalidatePath("/", "layout"); // released stock shows on cached pages
   const cutoff = new Date(Date.now() - hours * 3_600_000).toISOString();
   const { data: orders } = await db
     .from("orders")

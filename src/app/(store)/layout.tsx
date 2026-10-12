@@ -5,6 +5,7 @@ import { FlyLayer } from "@/components/store/fly-layer";
 import { Footer } from "@/components/store/footer";
 import { Header } from "@/components/store/header";
 import { MobileCartBar } from "@/components/store/mobile-cart-bar";
+import { BackToTop } from "@/components/store/back-to-top";
 import { Providers } from "@/components/store/providers";
 import { getPublicSettings } from "@/lib/data";
 
@@ -29,6 +30,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       <CartDrawer />
       <FlyLayer />
       <MobileCartBar />
+      <BackToTop />
     </Providers>
   );
 }

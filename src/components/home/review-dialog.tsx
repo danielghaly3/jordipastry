@@ -24,14 +24,16 @@ export function ReviewDialog({ onPosted }: { onPosted?: () => void }) {
   const [treat, setTreat] = useState<Treat>("donut");
   const [state, setState] = useState<"idle" | "busy" | "done">("idle");
   const [error, setError] = useState("");
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  useEffect(() => () => clearTimeout(closeTimer.current), []);
   useEffect(() => {
     const d = ref.current;
     if (open && d && !d.open) d.showModal();
     if (!open && d?.open) d.close();
   }, [open]);
 
-  const start = () => { setState("idle"); setError(""); setRating(0); setBody(""); setOpen(true); };
+  const start = () => { clearTimeout(closeTimer.current); setState("idle"); setError(""); setRating(0); setBody(""); setOpen(true); };
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rating) return setError("Tap the stars to choose a rating.");
@@ -42,7 +44,7 @@ export function ReviewDialog({ onPosted }: { onPosted?: () => void }) {
     setState("done");
     onPosted?.();
     router.refresh();
-    setTimeout(() => setOpen(false), 1800);
+    closeTimer.current = setTimeout(() => setOpen(false), 1800);
   };
   const shown = hover || rating;
 
@@ -54,7 +56,12 @@ export function ReviewDialog({ onPosted }: { onPosted?: () => void }) {
       <dialog
         ref={ref}
         onClose={() => setOpen(false)}
-        onClick={(e) => e.target === e.currentTarget && setOpen(false)}
+        onClick={(e) => {
+          // Close only on a real backdrop click (outside the panel), not on the dialog's own scrollbar.
+          if (e.target !== e.currentTarget) return;
+          const r = e.currentTarget.getBoundingClientRect();
+          if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) setOpen(false);
+        }}
         aria-labelledby="review-dialog-title"
         className="m-auto max-h-[92dvh] w-[min(94vw,880px)] overflow-y-auto overscroll-contain rounded-[32px] text-left bg-cream p-0 text-cocoa shadow-lift backdrop:bg-cocoa/50 backdrop:backdrop-blur-[2px]"
       >
@@ -135,7 +142,7 @@ export function ReviewDialog({ onPosted }: { onPosted?: () => void }) {
                 <input type="text" tabIndex={-1} autoComplete="off" value={trap} onChange={(e) => setTrap(e.target.value)} className="absolute -left-[9999px] h-px w-px opacity-0" aria-hidden="true" />
                 </div>
                 <div className="grid content-start gap-5">
-                <div className="rounded-[28px] bg-pink px-5 py-8 md:sticky md:top-0 md:mt-12">
+                <div className="rounded-[28px] bg-pink-ink px-5 py-8 md:sticky md:top-0 md:mt-12">
                   <p className="mb-9 text-center text-xs font-bold uppercase tracking-[0.12em] text-white">Live preview</p>
                   <motion.div key={cardStyle} initial={{ opacity: 0, y: 10, rotate: -2 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ type: "spring", stiffness: 260, damping: 20 }}>
                     <ReviewCard review={{ display_name: name.trim() || "Your name", rating: rating || 5, body: body.trim() || "Your words will show here.", verified: false, card_style: cardStyle, treat }} />

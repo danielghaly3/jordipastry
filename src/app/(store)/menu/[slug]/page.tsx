@@ -14,6 +14,11 @@ import { effectivePrice, isAvailable } from "@/lib/types";
 
 type Props = { params: Promise<{ slug: string }> };
 
+// Pre-build every current item; items added later are built on first visit and then cached.
+export async function generateStaticParams() {
+  return (await getProducts()).map((p) => ({ slug: p.slug }));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProductBySlug((await params).slug);
   if (!product) return { title: "Item not found" };
@@ -67,7 +72,7 @@ export default async function ProductPage({ params }: Props) {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             {product.category && (
-              <Link href={`/menu?category=${product.category.slug}`} className="rounded-full bg-pink-tint px-3 py-1 text-sm font-semibold text-pink-ink hover:bg-pink-soft">
+              <Link href={`/menu?category=${product.category.slug}`} className="rounded-full bg-pink-tint px-3 py-1 text-sm font-bold text-accent-ink hover:bg-pink-soft">
                 {product.category.name}
               </Link>
             )}
@@ -106,13 +111,16 @@ export default async function ProductPage({ params }: Props) {
               </div>
             )}
             {!product.ingredients && product.allergens.length === 0 && (
-              <div className="text-cocoa-muted">
+              <div>
+                <dt className="sr-only">Ingredients and allergens</dt>
+                <dd className="text-cocoa-muted">
                 Ingredient and allergen details haven&apos;t been added for this item yet.
                 {settings.contact.whatsapp && (
                   <a href={whatsappLink(settings.contact.whatsapp, `Hi! Could you tell me the ingredients and allergens in ${product.name}?`)} target="_blank" rel="noopener noreferrer" className="ml-1 inline-flex items-center gap-1 font-semibold text-pink-ink hover:underline">
                     <MessageCircle className="h-4 w-4" /> Ask us on WhatsApp
                   </a>
                 )}
+                </dd>
               </div>
             )}
           </dl>

@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { Mascot } from "@/components/brand/mascot";
 import { Medallion, Ribbon, categoryIcon } from "@/components/brand/ribbon";
@@ -21,6 +21,12 @@ function MenuCardSection({ title, slug, products, preload = false }: { title: st
       </ul>
     </section>
   );
+}
+
+/** Reads ?category= and ?q= in the browser so the menu page itself can be served from cache. */
+export function MenuBrowserFromUrl(props: { products: Product[]; categories: Category[] }) {
+  const sp = useSearchParams();
+  return <MenuBrowser {...props} initialCategory={sp.get("category") ?? ""} initialQuery={sp.get("q") ?? ""} />;
 }
 
 export function MenuBrowser({ products, categories, initialCategory, initialQuery }: {
@@ -56,7 +62,7 @@ export function MenuBrowser({ products, categories, initialCategory, initialQuer
 
   return (
     <>
-      <div className="sticky top-[76px] z-20 -mx-5 mt-8 bg-cream/95 px-5 py-3 backdrop-blur md:static md:mx-0 md:bg-transparent md:px-0 md:backdrop-blur-none">
+      <div className="sticky top-[88px] z-20 -mx-5 mt-8 bg-cream/95 px-5 py-3 backdrop-blur md:static md:mx-0 md:bg-transparent md:px-0 md:backdrop-blur-none">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="no-scrollbar flex gap-2 overflow-x-auto" role="group" aria-label="Filter by category">
             <button type="button" className={chip(!category)} aria-pressed={!category} onClick={() => { setCategory(""); sync("", query); }}>All</button>
